@@ -95,11 +95,9 @@ class LinkedList:
         return -1
     
     def swap(self, i, j):
-        # If indices are the same, no swap needed
         if i == j:
             return
         
-        # Find nodes at positions i and j
         node_i_prev = None
         node_i = self.head
         index_i = 0
@@ -116,11 +114,10 @@ class LinkedList:
             node_j = node_j.next
             index_j += 1
         
-        # If either node is not found, return without changes
         if not node_i or not node_j:
             return
         
-        # Swap the nodes by updating their previous nodes' next pointers
+        # Swap the nodes by updating their previous nodes' next pointers       
         if node_i_prev:
             node_i_prev.next = node_j
         else:
@@ -140,10 +137,10 @@ class LinkedList:
         if self.head is None or self.head.next is None:
             return
         
-        sorted_tail = self.head  # Last node of the sorted portion
+        sorted_tail = self.head  
         
         while sorted_tail.next:
-            current = sorted_tail.next  # Node to be inserted
+            current = sorted_tail.next  
             
             # If current node is already in correct position
             if current.data >= sorted_tail.data:
@@ -167,6 +164,26 @@ class LinkedList:
             # Insert current node
             current.next = prev.next
             prev.next = current
+
+        ''' alternative...
+        elements = []
+        current = self.head
+
+        while current is not None:
+            elements.append(current.data)
+            current = current.next
+
+        for i in range(1, len(elements)):
+            j = i - 1
+            while j >= 0 and elements[j] > elements[j+1]:
+                elements[j], elements[j+1] = elements[j+1], elements[j]
+                j -= 1
+
+        current = self.head
+        for element in elements:
+            current.data = element
+            current = current.next
+        '''
 
 if __name__ == "__main__":
     L = LinkedList()
