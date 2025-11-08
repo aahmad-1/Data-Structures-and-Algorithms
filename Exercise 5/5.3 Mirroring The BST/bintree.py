@@ -1,205 +1,180 @@
 class Node:
     def __init__(self, key: int):
         self.key = key
-        self.left = None
         self.right = None
-
+        self.left = None
 
 class BST:
     def __init__(self):
         self.root = None
-        self.is_mirrored = False
+        self.is_mirrored = False  # Track if tree is mirrored
     
-    def preorder(self):
-        """Prints BST in preorder traversal"""
-        def _preorder(node):
-            if node:
-                print(node.key, end=' ')
-                _preorder(node.left)
-                _preorder(node.right)
-        
-        _preorder(self.root)
+    def preorder(self):  #visit node, traverse left, traverse right
+        self._preorderHelp(self.root)
+        print() 
+
+    def _preorderHelp(self, node):
+        if node is None:  # Base case: if node doesn't exist, return
+            return
+        print(node.key, end=' ')   
+        self._preorderHelp(node.left)   
+        self._preorderHelp(node.right)
+
+    def inorder(self): #traverse left, visit node, traverse right
+        self._inorderHelp(self.root) 
         print()
-    
-    def postorder(self):
-        """Prints BST in postorder traversal"""
-        def _postorder(node):
-            if node:
-                _postorder(node.left)
-                _postorder(node.right)
-                print(node.key, end=' ')
+
+    def _inorderHelp(self, node):
+        if node is None:
+            return
+        self._inorderHelp(node.left)
+        print(node.key, end=' ')
+        self._inorderHelp(node.right)
         
-        _postorder(self.root)
+    def postorder(self): #traverse left,  traverse right, visit node
+        self._postorderHelp(self.root)
         print()
-    
-    def inorder(self):
-        """Prints BST in inorder traversal"""
-        def _inorder(node):
-            if node:
-                _inorder(node.left)
-                print(node.key, end=' ')
-                _inorder(node.right)
-        
-        _inorder(self.root)
-        print()
-    
+
+    def _postorderHelp(self, node):
+        if node is None:
+            return
+        self._postorderHelp(node.left)
+        self._postorderHelp(node.right)
+        print(node.key, end=' ')
+
     def breadthfirst(self):
-        """Prints BST in breadth-first (level-order) traversal"""
         if self.root is None:
             print()
             return
         
         queue = [self.root]
+
         while queue:
             node = queue.pop(0)
             print(node.key, end=' ')
-            if node.left:
+
+            if node.left is not None:
                 queue.append(node.left)
-            if node.right:
+
+            if node.right is not None:
                 queue.append(node.right)
+        
         print()
-    
+
     def insert(self, key: int):
-        """Inserts a key into the BST, ignoring duplicates"""
-        if self.root is None:
-            self.root = Node(key)
-            return
+        self.root = self._insertHelp(self.root, key)
+
+    def _insertHelp(self, node, key):
+        if node is None:
+            node = Node(key)
+        elif not self.is_mirrored:
+            if node.key > key:
+                node.left = self._insertHelp(node.left, key)
+            elif node.key < key:
+                node.right = self._insertHelp(node.right, key)
+        else:  # Tree is mirrored
+            if node.key > key:
+                node.right = self._insertHelp(node.right, key)
+            elif node.key < key:
+                node.left = self._insertHelp(node.left, key)
         
-        curr = self.root
-        while True:
-            # When mirrored, comparison directions are reversed
-            if not self.is_mirrored:
-                # Normal: smaller goes left, larger goes right
-                if key < curr.key:
-                    if curr.left is None:
-                        curr.left = Node(key)
-                        return
-                    curr = curr.left
-                elif key > curr.key:
-                    if curr.right is None:
-                        curr.right = Node(key)
-                        return
-                    curr = curr.right
-                else:
-                    # Duplicate
-                    return
-            else:
-                # Mirrored: smaller goes right, larger goes left
-                if key < curr.key:
-                    if curr.right is None:
-                        curr.right = Node(key)
-                        return
-                    curr = curr.right
-                elif key > curr.key:
-                    if curr.left is None:
-                        curr.left = Node(key)
-                        return
-                    curr = curr.left
-                else:
-                    # Duplicate
-                    return
+        return node
     
-    def search(self, key: int) -> bool:
-        """Searches for a key in the BST"""
-        curr = self.root
-        while curr:
-            if key == curr.key:
-                return True
-            elif not self.is_mirrored:
-                # Normal BST
-                if key < curr.key:
-                    curr = curr.left
-                else:
-                    curr = curr.right
+    def search(self, key: int):
+        return self._searchHelp(self.root, key)
+
+    def _searchHelp(self, node, key):
+        if node is None:
+            return False 
+        
+        if node.key == key:
+            return True
+        
+        if not self.is_mirrored:
+            if node.key > key:
+                return self._searchHelp(node.left, key)
             else:
-                # Mirrored BST
-                if key < curr.key:
-                    curr = curr.right
-                else:
-                    curr = curr.left
-        return False
-    
+                return self._searchHelp(node.right, key)
+        else:  # Tree is mirrored
+            if node.key > key:
+                return self._searchHelp(node.right, key)
+            else:
+                return self._searchHelp(node.left, key)
+        
     def remove(self, key: int):
-        """Removes a key from the BST using maximum node principle"""
-        parent = None
-        curr = self.root
-        
-        # Find the node to remove and its parent
-        while curr and curr.key != key:
-            parent = curr
-            if not self.is_mirrored:
-                if key < curr.key:
-                    curr = curr.left
-                else:
-                    curr = curr.right
+        self.root = self._removeHelp(self.root, key)
+
+    def _removeHelp(self, node, key):
+        if node is None:
+            return None
+        elif not self.is_mirrored:
+            if node.key > key:
+                node.left = self._removeHelp(node.left, key)
+            elif node.key < key:
+                node.right = self._removeHelp(node.right, key)
             else:
-                if key < curr.key:
-                    curr = curr.right
+                if node.left is None:
+                    return node.right
+                elif node.right is None:
+                    return node.left
                 else:
-                    curr = curr.left
-        
-        if curr is None:
-            return  # Key not found
-        
-        # Case 1: Node has two children
-        if curr.left and curr.right:
-            # Find max in left subtree
-            # "Left subtree" means the subtree with smaller values
-            # In normal BST: that's the physical left
-            # In mirrored BST: that's the physical right
-            max_parent = curr
-            if not self.is_mirrored:
-                max_node = curr.left
-                while max_node.right:
-                    max_parent = max_node
-                    max_node = max_node.right
+                    node.key = self._getmax(node.left)
+                    node.left = self._removemax(node.left)
+        else:  # Tree is mirrored
+            if node.key > key:
+                node.right = self._removeHelp(node.right, key)
+            elif node.key < key:
+                node.left = self._removeHelp(node.left, key)
             else:
-                max_node = curr.right
-                while max_node.left:
-                    max_parent = max_node
-                    max_node = max_node.left
-            
-            # Replace curr's key with max_node's key
-            curr.key = max_node.key
-            
-            # Remove max_node (which has at most one child on the other side)
-            if not self.is_mirrored:
-                child = max_node.left
-                if max_parent == curr:
-                    max_parent.left = child
+                if node.right is None:
+                    return node.left
+                elif node.left is None:
+                    return node.right
                 else:
-                    max_parent.right = child
-            else:
-                child = max_node.right
-                if max_parent == curr:
-                    max_parent.right = child
-                else:
-                    max_parent.left = child
+                    node.key = self._getmax(node.right)
+                    node.right = self._removemax(node.right)
         
-        # Case 2: Node has one or no children
-        else:
-            child = curr.left if curr.left else curr.right
-            
-            if parent is None:
-                self.root = child
-            elif parent.left == curr:
-                parent.left = child
+        return node
+
+    def _getmax(self, node):
+        if not self.is_mirrored:
+            if node.right is None:
+                return node.key
             else:
-                parent.right = child
+                return self._getmax(node.right)
+        else:  #tree is mirroed so max is on the left
+            if node.left is None:
+                return node.key
+            else:
+                return self._getmax(node.left)
+
+    def _removemax(self, node):
+        if not self.is_mirrored:
+            if node.right is None:
+                return node.left
+            node.right = self._removemax(node.right)
+        else:  # same thing
+            if node.left is None:
+                return node.right
+            node.left = self._removemax(node.left)
+        
+        return node
     
     def mirror(self):
-        """Mirrors the BST by swapping left and right children of all nodes"""
-        def _mirror(node):
-            if node is None:
-                return
-            # Swap left and right children
-            node.left, node.right = node.right, node.left
-            # Recursively mirror subtrees
-            _mirror(node.left)
-            _mirror(node.right)
+        self._mirrorHelp(self.root)
+        if self.is_mirrored:
+            self.is_mirrored = False
+        else:
+            self.is_mirrored = True
+            
+    def _mirrorHelp(self, node):
+        if node is None:
+            return
         
-        _mirror(self.root)
-        self.is_mirrored = not self.is_mirrored
+        self._mirrorHelp(node.left)  # Recursively mirror left and right subtrees first
+        self._mirrorHelp(node.right)
+    
+        node.left, node.right = node.right, node.left # Swap left and right children
 
 
 if __name__ == "__main__":
