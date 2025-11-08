@@ -1,110 +1,87 @@
 class Node:
     def __init__(self, key: int):
         self.key = key
-        self.left = None
         self.right = None
-
+        self.left = None
 
 class BST:
     def __init__(self):
         self.root = None
     
-    def preorder(self):
-        """Prints BST in preorder traversal"""
-        def _preorder(node):
-            if node:
-                print(node.key, end=' ')
-                _preorder(node.left)
-                _preorder(node.right)
-        
-        _preorder(self.root)
-        print()
-    
-    def insert(self, key: int):
-        """Inserts a key into the BST, ignoring duplicates"""
-        if self.root is None:
-            self.root = Node(key)
+    def preorder(self):  #visit node, traverse left, traverse right
+        self._preorderHelp(self.root)
+        print() 
+
+    def _preorderHelp(self, node):
+        if node is None:  # Base case: if node doesn't exist, return
             return
-        
-        curr = self.root
-        while True:
-            if key < curr.key:
-                if curr.left is None:
-                    curr.left = Node(key)
-                    return
-                curr = curr.left
-            elif key > curr.key:
-                if curr.right is None:
-                    curr.right = Node(key)
-                    return
-                curr = curr.right
-            else:
-                # Duplicate key, ignore
-                return
-    
-    def search(self, key: int) -> bool:
-        """Searches for a key in the BST"""
-        curr = self.root
-        while curr:
-            if key == curr.key:
-                return True
-            elif key < curr.key:
-                curr = curr.left
-            else:
-                curr = curr.right
-        return False
-    
-    def remove(self, key: int):
-        """Removes a key from the BST using maximum node principle"""
-        def _find_max(node):
-            while node.right:
-                node = node.right
-            return node
-        
-        parent = None
-        curr = self.root
-        
-        # Find the node to remove and its parent
-        while curr and curr.key != key:
-            parent = curr
-            if key < curr.key:
-                curr = curr.left
-            else:
-                curr = curr.right
-        
-        if curr is None:
-            return  # Key not found
-        
-        # Case 1: Node has two children
-        if curr.left and curr.right:
-            # Find max in left subtree
-            max_parent = curr
-            max_node = curr.left
-            while max_node.right:
-                max_parent = max_node
-                max_node = max_node.right
+        print(node.key, end=' ')   
+        self._preorderHelp(node.left)   
+        self._preorderHelp(node.right) 
             
-            # Replace curr's key with max_node's key
-            curr.key = max_node.key
-            
-            # Now remove max_node (which has at most left child)
-            if max_parent == curr:
-                max_parent.left = max_node.left
-            else:
-                max_parent.right = max_node.left
+
+    def insert(self, key: int):
+        self.root = self._insertHelp(self.root, key)
+
+    def _insertHelp(self, node, key):
+        if node is None:
+            node = Node(key)
+        elif node.key > key: 
+            node.left = self._insertHelp(node.left, key)
+        elif node.key < key:
+            node.right = self._insertHelp(node.right, key)
         
-        # Case 2: Node has one or no children
+        return node
+    
+    def search(self, key: int):
+        return self._searchHelp(self.root, key)
+
+    def _searchHelp(self, node, key):
+        if node is None:
+            return False 
+        
+        if node.key == key:
+            return True
+        
+        if node.key > key:
+            return self._searchHelp(node.left, key)
         else:
-            child = curr.left if curr.left else curr.right
-            
-            if parent is None:
-                self.root = child
-            elif parent.left == curr:
-                parent.left = child
+            return self._searchHelp(node.right, key)
+        
+    def remove(self, key: int):
+        self.root = self._removeHelp(self.root, key)
+
+    def _removeHelp(self, node, key):
+        if node is None:
+            return None
+        elif node.key > key:
+            node.left = self._removeHelp(node.left, key)
+        elif node.key < key:
+            node.right = self._removeHelp(node.right, key)
+        else:
+            if node.left is None:
+                return node.right
+            elif node.right is None:
+                return node.left
             else:
-                parent.right = child
+                node.key = self._getmax(node.left)
+                node.left = self._removemax(node.left)
+        
+        return node
 
+    def _getmax(self, node):
+        if node.right is None:
+            return node.key
+        else:
+            return self._getmax(node.right)
 
+    def _removemax(self, node):
+        if node.right is None:
+            return node.left
+        node.right = self._removemax(node.right)
+
+        return node
+    
 if __name__ == "__main__":
     Tree = BST()
     keys = [5, 9, 1, 3, 7, 7, 4, 6, 2]
