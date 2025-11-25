@@ -13,7 +13,7 @@ class Graph:
         distances[start] = 0
         
         prev = [None] * self.n
-        seen = [False] * self.n
+        seen = set() 
         
         for i in range(self.n):
             curr = self.minVertex(distances, seen)
@@ -21,16 +21,16 @@ class Graph:
             if curr == -1 or distances[curr] == math.inf:
                 break
             
-            seen[curr] = True
+            seen.add(curr)
             
             if curr == end:
-                self._print_path(prev, end)
+                self.print_path(prev, end)
                 return
             
             for neighbor in range(self.n):
                 weight = self.graph_matrix[curr][neighbor]
                 
-                if weight > 0 and not seen[neighbor]:
+                if weight > 0 and neighbor not in seen:
                     new_dist = distances[curr] + weight
                     
                     if new_dist < distances[neighbor]:
@@ -39,18 +39,18 @@ class Graph:
         
         print(-1)
     
-    def minVertex(self, distances, seen):
+    def minVertex(self, distances: list[float], seen: set):
         shortest_dist = math.inf
         min_vertex = -1
         
         for v in range(self.n):
-            if seen[v] is False and distances[v] < shortest_dist:
+            if v not in seen and distances[v] < shortest_dist:
                 shortest_dist = distances[v]
                 min_vertex = v
         
         return min_vertex
     
-    def _print_path(self, prev, end):
+    def print_path(self, prev, end):
         path = []
         curr = end
         
@@ -58,7 +58,6 @@ class Graph:
             path.append(curr)
             curr = prev[curr]
         
-        # Reverse to get start -> end order
         path.reverse()
         
         print(" ".join(map(str, path)))
